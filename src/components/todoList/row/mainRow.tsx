@@ -3,9 +3,9 @@ import React, { Dispatch, SetStateAction, useState } from "react";
 import { toast } from "react-toastify";
 import Loading from "../../loading";
 import Todo from "../../models/todo";
-import {  editTodo, removeTodo } from "../../../store/todoSlice";
+import {  editTodo, setTodos } from "../../../app/store/todoSlice";
 import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../../store";
+import { AppDispatch } from "../../../app/store";
 interface Props {
     item: Todo,
     seteditItem: Dispatch<SetStateAction<boolean>>,
@@ -19,11 +19,17 @@ const Row: React.FC<Props> = ({ item, seteditItem }) => {
     const deleteHaqndler = async (id: number) => {
         setLoadingRemove(true)
         try {
-            let res = await fetch(`https://629ef5bce67470ca4dec9bcb.endapi.io/todos/${id}`, {
+            let res = await fetch(`http://localhost:8000/api/admin/todolist/${id}`, {
                 method: "DELETE", headers: { 'Content-Type': 'application/json', 'charset': 'utf-8 ' }
             });
-            dispatch(removeTodo(id));
-            toast(<div className='vazir-matn-font'>حذف انجام شد</div>);
+            const data = await res.json();
+            if (data.status === 200) {
+                dispatch(setTodos(data.data))
+                toast(<div className='vazir-matn-font'>حذف انجام شد</div>);
+            }
+            else console.log(data)
+            
+          
         } catch (error) { console.log(error) }
         setLoadingRemove(false);
     }
@@ -31,13 +37,19 @@ const Row: React.FC<Props> = ({ item, seteditItem }) => {
     const editDoneHandler = async (id: number, done: boolean) => {
         setLoadingDone(true);
         try {
-            let res = await fetch(`https://629ef5bce67470ca4dec9bcb.endapi.io/todos/${id}`, {
+            let res = await fetch(`http://localhost:8000/api/admin/todolist/${id}`, {
                 method: "PUT",
-                body: JSON.stringify({ done: !done }),
+                body: JSON.stringify({ change: "done",value: !done }),
                 headers: { 'Content-Type': 'application/json', 'charset': 'utf-8 ' }
             });
-            const todo = await res.json();
-            dispatch(editTodo(todo.data));
+            const data = await res.json();
+            console.log(data)
+            if (data.status === 200) {
+                dispatch(editTodo(data.data))
+                toast(<div className='vazir-matn-font'>مورد نظر ویرایش شد todo</div>)
+            }
+            else console.log(data)
+           seteditItem(false);
 
         } catch (error) { console.log(error) }
         setLoadingDone(false);

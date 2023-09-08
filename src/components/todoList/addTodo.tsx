@@ -2,9 +2,9 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import { AppDispatch } from "../../store";
-import { addTodo } from "../../store/todoSlice";
+import { AppDispatch } from "../../app/store";
 import Loading from "../loading";
+import { setTodos } from "../../app/store/todoSlice";
 
 
 const AddTodo: React.FC = () => {
@@ -19,15 +19,17 @@ const AddTodo: React.FC = () => {
         if (input.length > 0) {
             setLoading(true)
             try {
-                let res = await fetch(`https://629ef5bce67470ca4dec9bcb.endapi.io/todos`, {
+                let res = await fetch(`http://localhost:8000/api/admin/todolist`, {
                     method: "POST",
                     body: JSON.stringify({ text: input, done: false }),
                     headers: { 'Content-Type': 'application/json', 'charset': 'utf-8 ' }
                 });
                 const data = await res.json();
-                dispatch(addTodo(data.data))
-
-                toast(<div className='vazir-matn-font'>مورد نظر اضافه شد todo</div>)
+                if (data.status === 200) {
+                    dispatch(setTodos(data.data))
+                    toast(<div className='vazir-matn-font'>مورد نظر اضافه شد todo</div>)
+                }
+                else console.log(data)
 
             } catch (error) { console.log(error) }
             setLoading(false);

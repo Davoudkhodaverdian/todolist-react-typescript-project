@@ -3,11 +3,11 @@ import React, { useState } from "react";
 import AddTodo from "./addTodo";
 import Todo from "../models/todo";
 import Row from "./row";
-import { AppDispatch, RootState } from "../../store";
+import { AppDispatch, RootState } from "../../app/store";
 import { useEffect } from 'react';
 import Filter from "./filter";
 import { useDispatch, useSelector } from "react-redux";
-import { setTodos } from "../../store/todoSlice";
+import { setTodos } from "../../app/store/todoSlice";
 
 const TodoList: React.FC = () => {
 
@@ -20,9 +20,10 @@ const TodoList: React.FC = () => {
   const getTodos = async () => {
     try {
       // Fetch data from external API
-      const res = await fetch(`https://629ef5bce67470ca4dec9bcb.endapi.io/todos`)
-      const list = await res.json();
-      dispatch(setTodos(list.data));
+      const res = await fetch(`http://localhost:8000/api/admin/todolist`)
+      const data = await res.json();
+      if (data.status === 200) dispatch(setTodos(data.data))
+      else console.log(data)
       
     } catch (error) { console.log(error) }
 
@@ -32,6 +33,7 @@ const TodoList: React.FC = () => {
 
   const filter = (index: number, searchStr: string): Todo[] => {
     let filterTodos: Todo[] = [];
+    
     filterTodos = todos.filter(todo => (index === 0 ? true : index === 1 ? todo.done : !todo.done));
     filterTodos = filterTodos.filter(todo => (todo.text.includes(searchStr)));
     return filterTodos;

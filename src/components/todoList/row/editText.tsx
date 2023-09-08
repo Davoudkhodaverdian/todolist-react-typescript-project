@@ -2,9 +2,10 @@
 import { Dispatch, SetStateAction, useState } from "react";
 import Loading from "../../loading";
 import Todo from "../../models/todo";
-import {  editTodo } from "../../../store/todoSlice";
+import {  editTodo } from "../../../app/store/todoSlice";
 import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../../store";
+import { AppDispatch } from "../../../app/store";
+import { toast } from "react-toastify";
 interface Props {
     item: Todo,
     seteditItem: Dispatch<SetStateAction<boolean>>,
@@ -22,15 +23,19 @@ const Row: React.FC<Props> = ({ seteditItem, item }) => {
         event.preventDefault();
         setLoading(true);
         try {
-            let res = await fetch(`https://629ef5bce67470ca4dec9bcb.endapi.io/todos/${item.id}`, {
+            let res = await fetch(`http://localhost:8000/api/admin/todolist/${item.id}`, {
                 method: "PUT",
-                body: JSON.stringify({ text: input }),
+                body: JSON.stringify({ change: "text",value: input }),
                 headers: { 'Content-Type': 'application/json', 'charset': 'utf-8 ' }
             });
-            const todo = await res.json();
-            dispatch(editTodo(todo.data));
-            seteditItem(false);
-
+            const data = await res.json();
+            console.log(data)
+            if (data.status === 200) {
+                dispatch(editTodo(data.data))
+                toast(<div className='vazir-matn-font'>مورد نظر ویرایش شد todo</div>)
+            }
+            else console.log(data)
+           seteditItem(false);
         } catch (error) { console.log(error) }
         setLoading(false);
     }
