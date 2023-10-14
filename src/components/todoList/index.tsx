@@ -8,37 +8,40 @@ import { useEffect } from 'react';
 import Filter from "./filter";
 import { useDispatch, useSelector } from "react-redux";
 import { setTodos } from "../../app/store/todoSlice";
+import getBaseUrl from "../../app/api/getBaseUrl";
+import { useGetTodosQuery } from "../../app/api";
+import Loading from "../loading";
 
 const TodoList: React.FC = () => {
 
-  const todos = useSelector((state: RootState) => state.todo);
-  
+  // const todos = useSelector((state: RootState) => state.todo);
+  const { data, isLoading,error,isError } = useGetTodosQuery("");
   const [SelectedIndex, setSelectedIndex] = useState<number>(0);
   const [search, setSearch] = useState<string>("");
   const dispatch = useDispatch<AppDispatch>();
-
+console.log({ data, isLoading,error,isError })
+  // not use else with rtk query
   const getTodos = async () => {
     try {
       // Fetch data from external API
-      const res = await fetch(`http://localhost:8000/api/admin/todolist`)
-      const data = await res.json();
-      if (data.status === 200) dispatch(setTodos(data.data))
-      else console.log(data)
-      
+      // const res = await fetch(`${getBaseUrl()}/api/admin/todolist`)
+      //const data = await res.json();
+      // if (data.status === 200) dispatch(setTodos(data.data))
+      // else console.log(data)
     } catch (error) { console.log(error) }
 
   }
 
-  useEffect(() => { getTodos() }, []);
+  //useEffect(() => { getTodos() }, []);
 
   const filter = (index: number, searchStr: string): Todo[] => {
     let filterTodos: Todo[] = [];
-    
+    const todos: Todo[] = data.data;
     filterTodos = todos.filter(todo => (index === 0 ? true : index === 1 ? todo.done : !todo.done));
     filterTodos = filterTodos.filter(todo => (todo.text.includes(searchStr)));
     return filterTodos;
   }
-
+  
   return (
     <div>
       <Filter setSelectedIndex={setSelectedIndex} setSearch={setSearch} />
@@ -48,9 +51,12 @@ const TodoList: React.FC = () => {
             <h1 className="text-gray-700">Todo List</h1>
             <AddTodo />
           </div>
-          <div className='max-h-[350px] overflow-auto shadow-inner'>
-            {filter(SelectedIndex, search).map(item => (<Row key={item.id} item={item} />))}
-          </div>
+          {isLoading ? <div className="flex justify-center"><Loading /></div> : error ?
+            <div className="flex justify-center">{(error as any)?.error}</div> :
+            <div className='max-h-[350px] overflow-auto shadow-inner'>
+              {filter(SelectedIndex, search).map(item => (<Row key={item.id} item={item} />))}
+            </div>
+          }
         </div>
       </div>
     </div>

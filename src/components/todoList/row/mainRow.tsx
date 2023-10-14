@@ -6,6 +6,8 @@ import Todo from "../../models/todo";
 import {  editTodo, setTodos } from "../../../app/store/todoSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../../app/store";
+import getBaseUrl from "../../../app/api/getBaseUrl";
+import { useEditTodoMutation, useRemoveTodoMutation } from "../../../app/api";
 interface Props {
     item: Todo,
     seteditItem: Dispatch<SetStateAction<boolean>>,
@@ -13,46 +15,49 @@ interface Props {
 
 const Row: React.FC<Props> = ({ item, seteditItem }) => {
 
-    const [loadingRemove, setLoadingRemove] = useState<boolean>(false);
-    const [loadingDone, setLoadingDone] = useState<boolean>(false);
-    const dispatch = useDispatch<AppDispatch>();
+    // const [loadingRemove, setLoadingRemove] = useState<boolean>(false);
+    // const [loadingDone, setLoadingDone] = useState<boolean>(false);
+    // const dispatch = useDispatch<AppDispatch>();
+    const[editTodo,{isLoading: loadingDone}] = useEditTodoMutation();
+    const[removeTodo,{isLoading: loadingRemove}] = useRemoveTodoMutation();
     const deleteHaqndler = async (id: number) => {
-        setLoadingRemove(true)
+        //setLoadingRemove(true)
         try {
-            let res = await fetch(`http://localhost:8000/api/admin/todolist/${id}`, {
-                method: "DELETE", headers: { 'Content-Type': 'application/json', 'charset': 'utf-8 ' }
-            });
-            const data = await res.json();
+            // let res = await fetch(`${getBaseUrl()}/api/admin/todolist/${id}`, {
+            //     method: "DELETE", headers: { 'Content-Type': 'application/json', 'charset': 'utf-8 ' }
+            // });
+            // const data = await res.json();
+            const data = await removeTodo(id).unwrap();
             if (data.status === 200) {
-                dispatch(setTodos(data.data))
+                // dispatch(setTodos(data.data))
                 toast(<div className='vazir-matn-font'>حذف انجام شد</div>);
             }
             else console.log(data)
             
-          
         } catch (error) { console.log(error) }
-        setLoadingRemove(false);
+        // setLoadingRemove(false);
     }
 
     const editDoneHandler = async (id: number, done: boolean) => {
-        setLoadingDone(true);
+        // setLoadingDone(true);
         try {
-            let res = await fetch(`http://localhost:8000/api/admin/todolist/${id}`, {
-                method: "PUT",
-                body: JSON.stringify({ change: "done",value: !done }),
-                headers: { 'Content-Type': 'application/json', 'charset': 'utf-8 ' }
-            });
-            const data = await res.json();
+            // let res = await fetch(`${getBaseUrl()}/api/admin/todolist/${id}`, {
+            //     method: "PUT",
+            //     body: JSON.stringify({ change: "done",value: !done }),
+            //     headers: { 'Content-Type': 'application/json', 'charset': 'utf-8 ' }
+            // });
+            // const data = await res.json();
+            const data = await editTodo({id:id,body: { change: "done",value: !done }}).unwrap();
             console.log(data)
             if (data.status === 200) {
-                dispatch(editTodo(data.data))
+                // dispatch(editTodo(data.data))
                 toast(<div className='vazir-matn-font'>مورد نظر ویرایش شد todo</div>)
             }
             else console.log(data)
            seteditItem(false);
 
         } catch (error) { console.log(error) }
-        setLoadingDone(false);
+        // setLoadingDone(false);
     }
 
     const editRowHandler = () => {
